@@ -146,9 +146,47 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       await handleSaveCurrentPage(tab.id, folderId);
     }
 
+    if (msg.action === 'saveSelectedContent') {
+      const tab = sender.tab;
+      if (!tab) return;
+      try {
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['turndown.min.js'] });
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: (html, folderId, customTitle, saveMethod) => {
+            window.__dsSelectedHtml = html;
+            window.__dsFolderId = folderId;
+            window.__dsCustomTitle = customTitle || null;
+            window.__dsSaveMethod = saveMethod || 'drive';
+          },
+          args: [msg.html, msg.folderId, msg.customTitle || null, msg.saveMethod || 'drive'],
+        });
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['save_to_drive.js'] });
+      } catch (e) {
+        chrome.tabs.sendMessage(tab.id, { action: 'saveResult', ok: false, error: e.message }).catch(() => {});
+      }
+    }
+
     if (msg.action === 'markdownReady') {
       const tab = sender.tab;
       if (!tab) return;
+
+      if (msg.saveMethod === 'local') {
+        try {
+          const date = new Date().toISOString().slice(0, 10);
+          const safeName = (msg.title || 'Untitled').replace(/[/\\:*?"<>|]/g, '-').trim().slice(0, 100);
+          const filename = `${safeName} — ${date}.md`;
+          const dataUrl = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(msg.markdown);
+          chrome.downloads.download({ url: dataUrl, filename, saveAs: true }, (downloadId) => {
+            const ok = downloadId !== undefined;
+            chrome.tabs.sendMessage(tab.id, { action: 'saveResult', ok, error: ok ? undefined : 'Download cancelled' }).catch(() => {});
+          });
+        } catch (e) {
+          chrome.tabs.sendMessage(tab.id, { action: 'saveResult', ok: false, error: e.message }).catch(() => {});
+        }
+        return;
+      }
+
       const folderId = msg.folderId;
       if (!folderId) return;
       try {

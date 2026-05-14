@@ -3,14 +3,19 @@
   window.__driveSidebarCapturing = true;
 
   try {
-    const clone = document.documentElement.cloneNode(true);
+    let bodyHtml;
 
-    // Remove noise
-    ['script', 'style', 'noscript', 'svg', 'nav', 'footer', 'header', 'aside'].forEach(tag => {
-      clone.querySelectorAll(tag).forEach(el => el.remove());
-    });
-
-    const body = clone.querySelector('body') || clone;
+    if (window.__dsSelectedHtml) {
+      bodyHtml = window.__dsSelectedHtml;
+      window.__dsSelectedHtml = null;
+    } else {
+      const clone = document.documentElement.cloneNode(true);
+      ['script', 'style', 'noscript', 'svg', 'nav', 'footer', 'header', 'aside'].forEach(tag => {
+        clone.querySelectorAll(tag).forEach(el => el.remove());
+      });
+      const body = clone.querySelector('body') || clone;
+      bodyHtml = body.innerHTML;
+    }
 
     const td = new TurndownService({
       headingStyle: 'atx',
@@ -18,15 +23,15 @@
       bulletListMarker: '-',
     });
 
-    // Keep <details>/<summary> readable
     td.addRule('details', {
       filter: 'details',
       replacement: (content) => '\n\n' + content + '\n\n',
     });
 
-    const markdown = td.turndown(body.innerHTML);
+    const markdown = td.turndown(bodyHtml);
 
-    const title = document.title || 'Untitled';
+    const title = window.__dsCustomTitle || document.title || 'Untitled';
+    window.__dsCustomTitle = null;
     const frontmatter = [
       '---',
       `title: "${title.replace(/"/g, '\\"')}"`,
@@ -43,6 +48,7 @@
       title,
       url: location.href,
       folderId: window.__dsFolderId || '',
+      saveMethod: window.__dsSaveMethod || 'drive',
     });
   } catch (e) {
     chrome.runtime.sendMessage({
