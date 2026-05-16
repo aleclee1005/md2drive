@@ -32,11 +32,29 @@
 
     const title = window.__dsCustomTitle || document.title || 'Untitled';
     window.__dsCustomTitle = null;
+
+    const getMeta = (names) => {
+      for (const n of names) {
+        const el = document.querySelector(`meta[property="${n}"],meta[name="${n}"]`);
+        if (el?.content) return el.content;
+      }
+      return '';
+    };
+    const author      = getMeta(['article:author','author','og:article:author','twitter:creator']);
+    const published   = getMeta(['article:published_time','og:article:published_time','datePublished']);
+    const description = getMeta(['og:description','description']);
+    const today       = new Date().toISOString().slice(0, 10);
+
+    const esc = s => s.replace(/"/g, '\\"');
     const frontmatter = [
       '---',
-      `title: "${title.replace(/"/g, '\\"')}"`,
-      `url: "${location.href}"`,
-      `saved: "${new Date().toISOString()}"`,
+      `title: "${esc(title)}"`,
+      `source: "${location.href}"`,
+      `author: "${author ? `[[${author}]]` : ''}"`,
+      `published: "${published ? published.slice(0, 10) : ''}"`,
+      `created: "${today}"`,
+      `description: "${esc(description)}"`,
+      'tags: clippings',
       '---',
       '',
       '',
@@ -49,6 +67,7 @@
       url: location.href,
       folderId: window.__dsFolderId || '',
       saveMethod: window.__dsSaveMethod || 'drive',
+      localPath: window.__dsLocalPath || '',
     });
   } catch (e) {
     chrome.runtime.sendMessage({

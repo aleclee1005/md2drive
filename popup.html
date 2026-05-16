@@ -19,7 +19,7 @@
     }
     .header-icon {
       width: 28px; height: 28px;
-      background: #34a853;
+      background: #202124;
       border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
     }
@@ -40,9 +40,13 @@
       font-size: 13px; font-family: inherit;
       cursor: pointer; transition: background 0.15s;
     }
-    .btn-primary { background: #34a853; color: #fff; font-weight: 600; width: 100%; }
-    .btn-primary:hover { background: #2d9249; }
+    .btn-primary { background: #f8c4d0; color: #fff; font-weight: 600; width: 100%; }
+    .btn-primary:hover { background: #f4a7b9; }
     .btn-primary:disabled { background: #9aa0a6; cursor: default; }
+    .btn-local { background: #4181d5; }
+    .btn-local:hover:not(:disabled) { background: #1a73e8; }
+    .btn-clip { background: #5f6368; }
+    .btn-clip:hover:not(:disabled) { background: #3c4043; }
     .btn-small {
       padding: 5px 10px; font-size: 12px;
       background: #f1f3f4; color: #202124;
@@ -51,14 +55,14 @@
     .btn-danger { background: transparent; color: #ea4335; padding: 2px 6px; font-size: 12px; }
     .btn-danger:hover { background: #fce8e6; }
 
-    /* Folder picker (shown when multiple folders) */
-    #folderPicker {
+    /* Folder pickers */
+    .folder-picker {
       display: none;
       flex-direction: column;
       gap: 4px;
       margin-bottom: 8px;
     }
-    #folderPicker.visible { display: flex; }
+    .folder-picker.visible { display: flex; }
     .folder-option {
       display: flex; align-items: center; gap: 8px;
       padding: 7px 10px;
@@ -66,8 +70,10 @@
       cursor: pointer; transition: border-color 0.15s, background 0.15s;
     }
     .folder-option:hover { background: #f1f3f4; }
-    .folder-option.selected { border-color: #34a853; background: #e6f4ea; }
-    .folder-option input[type=radio] { accent-color: #34a853; }
+    .folder-option.drive-option.selected { border-color: #f8c4d0; background: #fdf0f4; }
+    .folder-option.drive-option input[type=radio] { accent-color: #f8c4d0; }
+    .folder-option.local-option.selected { border-color: #4181d5; background: #eef3fd; }
+    .folder-option.local-option input[type=radio] { accent-color: #4181d5; }
     .folder-option-name { font-size: 12px; font-weight: 500; flex: 1; }
     .folder-option-id { font-size: 10px; color: #9aa0a6; }
 
@@ -100,8 +106,8 @@
     .collapsible-label:hover { color: #202124; }
     .collapse-arrow { font-size: 9px; color: #9aa0a6; transition: transform 0.2s; }
     .collapse-arrow.collapsed { transform: rotate(180deg); }
-    #foldersBody { overflow: hidden; }
-    #foldersBody.collapsed { display: none; }
+    #foldersBody, #localFoldersBody { overflow: hidden; }
+    #foldersBody.collapsed, #localFoldersBody.collapsed { display: none; }
 
     .hint { font-size: 11px; color: #80868b; margin-top: 4px; line-height: 1.4; }
     .status { font-size: 11px; color: #5f6368; padding: 2px 0; min-height: 16px; }
@@ -110,49 +116,83 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="header-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-        <path d="M2 4h5l2 2h5v8H2V4z"/>
-      </svg>
+  <!-- Page preview -->
+  <div class="section" id="pagePreviewSection">
+    <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">
+      <img id="previewFavicon" width="14" height="14" style="border-radius:2px;flex-shrink:0;margin-top:2px;" src="" />
+      <div id="previewTitle" style="font-size:12px;font-weight:600;color:#202124;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;"></div>
     </div>
-    <div>
-      <div class="header-title">Drive Sidebar</div>
-      <div class="header-sub">Save any page as Markdown to Drive</div>
+    <div style="display:flex;flex-direction:column;gap:2px;font-size:11px;color:#5f6368;">
+      <div id="previewSource" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+      <div id="previewAuthor" style="display:none;"></div>
+      <div id="previewPublished" style="display:none;"></div>
+    </div>
+    <div id="previewSnippet" style="display:none;font-size:11px;color:#80868b;margin-top:6px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;font-style:italic;"></div>
+
+    <!-- MD full preview toggle -->
+    <div style="margin-top:8px;">
+      <button id="mdPreviewToggle" style="all:unset;cursor:pointer;font-size:10px;color:#9aa0a6;display:flex;align-items:center;gap:3px;">
+        <span id="mdPreviewArrow">▶</span> MD Preview
+      </button>
+      <div id="mdPreviewBox" style="display:none;margin-top:6px;height:200px;overflow-y:auto;background:#f8f9fa;border-radius:8px;padding:8px 0 8px 8px;font-family:monospace;font-size:10px;color:#3c4043;line-height:1.5;white-space:pre-wrap;word-break:break-word;scrollbar-width:thin;">
+        <span style="color:#9aa0a6;">Loading...</span>
+      </div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-label">Actions</div>
-
-    <!-- Folder picker (shown when 2+ folders) -->
-    <div id="folderPicker"></div>
-
-    <button class="btn-primary" id="saveBtn" disabled>Save this page to Drive (MD)</button>
+  <!-- Save buttons row -->
+  <div class="section" style="padding-top:10px;padding-bottom:10px;">
+    <div style="display:flex;gap:6px;">
+      <button class="btn-primary" id="saveBtn" disabled style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 6px;">
+        <svg width="14" height="12" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+          <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 48.5C.4 49.9 0 51.45 0 53h27.5z" fill="#00ac47"/>
+          <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 57.5c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.25z" fill="#ea4335"/>
+          <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+          <path d="M59.8 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+          <path d="M73.4 26.5l-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.8 53h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+        </svg>
+        Drive
+      </button>
+      <button class="btn-primary btn-clip" id="copyClipBtn" style="flex:1;padding:8px 6px;">📋 Copy</button>
+      <button class="btn-primary btn-local" id="saveLocalBtn" disabled style="flex:1;padding:8px 6px;">💻 Local</button>
+    </div>
+    <div id="saveStatusMsg" style="display:none;text-align:center;font-size:12px;font-weight:600;margin-top:8px;padding:6px;border-radius:8px;"></div>
   </div>
 
+  <!-- Folder pickers + add (side by side, merged) -->
   <div class="section">
-    <div class="section-label collapsible-label" id="foldersToggle">
-      Target Folders
-      <span class="collapse-arrow" id="foldersArrow">▲</span>
-    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start;">
 
-    <div id="foldersBody">
-      <div class="folder-list" id="folderList"></div>
-
-      <div class="add-folder-row">
-        <input class="folder-input" id="nameInput" placeholder="Folder label (custom name)" />
-        <div class="add-row">
-          <input class="folder-input" id="urlInput" placeholder="Paste Drive folder URL or ID" />
-          <button class="btn-small" id="addBtn">Add</button>
+      <!-- Cloud Drive column -->
+      <div style="flex:1;min-width:0;">
+        <div class="folder-picker" id="folderPicker"></div>
+        <button id="addDriveToggle" style="all:unset;cursor:pointer;display:block;width:100%;text-align:center;font-size:10px;color:#9aa0a6;padding:5px 0;margin-top:2px;border-radius:6px;" onmouseover="this.style.background='#f1f3f4'" onmouseout="this.style.background='transparent'">＋ Add Folder</button>
+        <div id="addDriveForm" style="display:none;margin-top:4px;">
+          <input class="folder-input" id="nameInput" placeholder="Label" style="font-size:11px;padding:5px 8px;margin-bottom:4px;" />
+          <input class="folder-input" id="urlInput" placeholder="Folder URL or ID" style="font-size:11px;padding:5px 8px;" />
+          <button class="btn-small" id="addBtn" style="margin-top:4px;width:100%;font-size:11px;">Add</button>
+          <div class="status" id="addStatus"></div>
         </div>
       </div>
 
-      <div class="status" id="addStatus"></div>
-      <div class="hint">In Drive, right-click a folder → Copy link → paste above</div>
+      <div style="width:1px;background:#e8eaed;align-self:stretch;flex-shrink:0;margin-top:18px;"></div>
+
+      <!-- Local column -->
+      <div style="flex:1;min-width:0;">
+        <div class="folder-picker" id="localFolderPicker"></div>
+        <button id="addLocalToggle" style="all:unset;cursor:pointer;display:block;width:100%;text-align:center;font-size:10px;color:#9aa0a6;padding:5px 0;margin-top:2px;border-radius:6px;" onmouseover="this.style.background='#f1f3f4'" onmouseout="this.style.background='transparent'">＋ Add Folder</button>
+        <div id="addLocalForm" style="display:none;margin-top:4px;">
+          <input class="folder-input" id="localPathInput" placeholder="Subfolder name" style="font-size:11px;padding:5px 8px;" />
+          <button class="btn-small" id="localAddBtn" style="margin-top:4px;width:100%;font-size:11px;">Add</button>
+          <div class="status" id="localAddStatus"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
+  <script src="turndown.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

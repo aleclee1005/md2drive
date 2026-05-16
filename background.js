@@ -94,20 +94,32 @@ function toggleSidebarInTab(tabId) {
   });
 }
 
+// ── Result broadcast (tab toast + popup feedback) ─────────────────────────────
+
+function sendResult(tabId, result) {
+  if (tabId) chrome.tabs.sendMessage(tabId, result).catch(() => {});
+  chrome.runtime.sendMessage(result).catch(() => {}); // notify popup if still open
+}
+
 // ── Save flow ─────────────────────────────────────────────────────────────────
 
-async function handleSaveCurrentPage(tabId, folderId) {
+async function handleSaveCurrentPage(tabId, folderId, customTitle) {
   try {
     await chrome.scripting.executeScript({ target: { tabId }, files: ['turndown.min.js'] });
-    // Stamp the folderId onto the page so save_to_drive.js can echo it back
     await chrome.scripting.executeScript({
       target: { tabId },
-      func: (id) => { window.__dsFolderId = id; },
-      args: [folderId],
+      func: (id, title) => {
+        window.__dsFolderId = id;
+        window.__dsSaveMethod = 'drive';
+        window.__dsLocalPath = '';
+        window.__dsSelectedHtml = null;
+        window.__dsCustomTitle = title || null;
+      },
+      args: [folderId, customTitle || null],
     });
     await chrome.scripting.executeScript({ target: { tabId }, files: ['save_to_drive.js'] });
   } catch (e) {
-    chrome.tabs.sendMessage(tabId, { action: 'saveResult', ok: false, error: e.message }).catch(() => {});
+    sendResult(tabId, { action: 'saveResult', ok: false, error: e.message });
   }
 }
 
@@ -133,37 +145,93 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       });
     }
 
-    if (msg.action === 'saveCurrentPage') {
-      const tab = sender.tab || await getActiveTab();
-      if (!tab) return;
-      const { driveFolderId } = await chrome.storage.sync.get('driveFolderId');
-      const folderId = msg.folderId || driveFolderId;
-      if (!folderId) {
-        chrome.tabs.sendMessage(tab.id, { action: 'saveResult', ok: false, error: 'no_folder' }).catch(() => {});
-        return;
-      }
+    if (msg.action === 'saveCurrentPageLocal') {
+      const tab = msg.tabId ? await chrome.tabs.get(msg.tabId).catch(() => null) : await getActiveTab();
+      if (!tab?.url?.startsWith('http')) return;
+      const subfolderPath = msg.subfolderPath || '';
+      const customTitle = msg.customTitle || null;
       chrome.tabs.sendMessage(tab.id, { action: 'saveStatus', status: 'converting' }).catch(() => {});
-      await handleSaveCurrentPage(tab.id, folderId);
+      try {
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['turndown.min.js'] });
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: (path, title) => {
+            window.__dsSelectedHtml = null;
+            window.__dsCustomTitle = title || null;
+            window.__dsSaveMethod = 'local';
+            window.__dsLocalPath = path;
+            window.__dsFolderId = null;
+          },
+          args: [subfolderPath, customTitle],
+        });
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['save_to_drive.js'] });
+      } catch (e) {
+        sendResult(tab.id, { action: 'saveResult', ok: false, error: e.message });
+      }
     }
 
-    if (msg.action === 'saveSelectedContent') {
+    if (msg.action === 'clipPageToClipboard') {
       const tab = sender.tab;
       if (!tab) return;
       try {
         await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['turndown.min.js'] });
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
-          func: (html, folderId, customTitle, saveMethod) => {
+          func: () => {
+            const clone = document.documentElement.cloneNode(true);
+            ['script','style','noscript','svg','nav','footer','header','aside'].forEach(tag =>
+              clone.querySelectorAll(tag).forEach(el => el.remove())
+            );
+            const td = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced', bulletListMarker: '-' });
+            const markdown = td.turndown((clone.querySelector('body') || clone).innerHTML);
+            chrome.runtime.sendMessage({ action: 'clipboardReady', markdown });
+          },
+        });
+      } catch (e) {
+        sendResult(tab.id, { action: 'saveResult', ok: false, error: e.message });
+      }
+    }
+
+    if (msg.action === 'saveCurrentPage') {
+      const tab = sender.tab || (msg.tabId ? await chrome.tabs.get(msg.tabId).catch(() => null) : await getActiveTab());
+      if (!tab) return;
+      const { driveFolderId } = await chrome.storage.sync.get('driveFolderId');
+      const folderId = msg.folderId || driveFolderId;
+      if (!folderId) {
+        sendResult(tab.id, { action: 'saveResult', ok: false, error: 'no_folder' });
+        return;
+      }
+      chrome.tabs.sendMessage(tab.id, { action: 'saveStatus', status: 'converting' }).catch(() => {});
+      await handleSaveCurrentPage(tab.id, folderId, msg.customTitle);
+    }
+
+    if (msg.action === 'saveSelectedContent') {
+      const tab = sender.tab;
+      if (!tab) return;
+      try {
+        let localPath = msg.localPath || '';
+        if (msg.saveMethod === 'local' && !localPath) {
+          const { localFolders, activeLocalFolder } = await chrome.storage.sync.get(['localFolders', 'activeLocalFolder']);
+          if (localFolders?.length) {
+            const idx = activeLocalFolder || 0;
+            localPath = localFolders[idx]?.path || localFolders[0].path || '';
+          }
+        }
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['turndown.min.js'] });
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: (html, folderId, customTitle, saveMethod, localPath) => {
             window.__dsSelectedHtml = html;
             window.__dsFolderId = folderId;
             window.__dsCustomTitle = customTitle || null;
             window.__dsSaveMethod = saveMethod || 'drive';
+            window.__dsLocalPath = localPath || '';
           },
-          args: [msg.html, msg.folderId, msg.customTitle || null, msg.saveMethod || 'drive'],
+          args: [msg.html, msg.folderId, msg.customTitle || null, msg.saveMethod || 'drive', localPath],
         });
         await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['save_to_drive.js'] });
       } catch (e) {
-        chrome.tabs.sendMessage(tab.id, { action: 'saveResult', ok: false, error: e.message }).catch(() => {});
+        sendResult(tab.id, { action: 'saveResult', ok: false, error: e.message });
       }
     }
 
@@ -175,14 +243,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         try {
           const date = new Date().toISOString().slice(0, 10);
           const safeName = (msg.title || 'Untitled').replace(/[/\\:*?"<>|]/g, '-').trim().slice(0, 100);
-          const filename = `${safeName} — ${date}.md`;
+          const baseFilename = `${safeName} — ${date}.md`;
+          const subfolderPath = msg.localPath || '';
+          const filename = subfolderPath ? `${subfolderPath}/${baseFilename}` : baseFilename;
+          const saveAs = !subfolderPath;
           const dataUrl = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(msg.markdown);
-          chrome.downloads.download({ url: dataUrl, filename, saveAs: true }, (downloadId) => {
+          chrome.downloads.download({ url: dataUrl, filename, saveAs }, (downloadId) => {
             const ok = downloadId !== undefined;
-            chrome.tabs.sendMessage(tab.id, { action: 'saveResult', ok, error: ok ? undefined : 'Download cancelled' }).catch(() => {});
+            sendResult(tab.id, { action: 'saveResult', ok, error: ok ? undefined : 'Download cancelled' });
           });
         } catch (e) {
-          chrome.tabs.sendMessage(tab.id, { action: 'saveResult', ok: false, error: e.message }).catch(() => {});
+          sendResult(tab.id, { action: 'saveResult', ok: false, error: e.message });
         }
         return;
       }
@@ -192,12 +263,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       try {
         chrome.tabs.sendMessage(tab.id, { action: 'saveStatus', status: 'uploading' }).catch(() => {});
         const file = await uploadToDrive(msg.markdown, msg.title, folderId);
-        chrome.tabs.sendMessage(tab.id, {
-          action: 'saveResult', ok: true,
-          fileId: file.id, fileUrl: file.webViewLink,
-        }).catch(() => {});
+        sendResult(tab.id, { action: 'saveResult', ok: true, fileId: file.id, fileUrl: file.webViewLink });
       } catch (e) {
-        chrome.tabs.sendMessage(tab.id, { action: 'saveResult', ok: false, error: e.message }).catch(() => {});
+        sendResult(tab.id, { action: 'saveResult', ok: false, error: e.message });
       }
     }
 
