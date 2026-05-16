@@ -1,5 +1,5 @@
 (function () {
-  if (document.getElementById('drivesidebar-root')) return;
+  if (document.getElementById('notesource-root')) return;
 
   const DRIVE_URL = 'https://drive.google.com';
   const DEFAULT_W = 420;
@@ -7,11 +7,11 @@
 
   // ── State ─────────────────────────────────────────────────────────────────
   let st = { mode: 'float', x: null, y: null, width: DEFAULT_W, collapsed: true };
-  function save() { chrome.storage.local.set({ drivesidebar: st }); }
+  function save() { chrome.storage.local.set({ notesource: st }); }
 
   // ── Root (shadow host) ────────────────────────────────────────────────────
   const root = document.createElement('div');
-  root.id = 'drivesidebar-root';
+  root.id = 'notesource-root';
   Object.assign(root.style, {
     position: 'fixed', zIndex: '2147483647',
     width: DEFAULT_W + 'px', overflow: 'hidden',
@@ -161,7 +161,7 @@
 
   // ── Toggle tab ────────────────────────────────────────────────────────────
   const toggleTab = document.createElement('button');
-  toggleTab.id = 'drivesidebar-tab';
+  toggleTab.id = 'notesource-tab';
   toggleTab.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   Object.assign(toggleTab.style, {
     position: 'fixed', right: '0', top: '50%', transform: 'translateY(-50%)',
@@ -337,9 +337,9 @@
   setMode('float');
   applyCollapsed();
 
-  chrome.storage.local.get(['drivesidebar'], (result) => {
-    if (result.drivesidebar) {
-      Object.assign(st, result.drivesidebar, { collapsed: true });
+  chrome.storage.local.get(['notesource'], (result) => {
+    if (result.notesource) {
+      Object.assign(st, result.notesource, { collapsed: true });
       root.style.width = st.width + 'px';
       setMode(st.mode);
       applyCollapsed();

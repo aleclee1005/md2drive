@@ -1,6 +1,6 @@
 (function () {
-  if (window.__driveSidebarCapturing) return;
-  window.__driveSidebarCapturing = true;
+  if (window.__noteSourceCapturing) return;
+  window.__noteSourceCapturing = true;
 
   try {
     let bodyHtml;
@@ -79,6 +79,6 @@
       error: e.message,
     });
   } finally {
-    window.__driveSidebarCapturing = false;
+    window.__noteSourceCapturing = false;
   }
 })();

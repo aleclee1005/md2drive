@@ -35,7 +35,7 @@ async function uploadToDrive(markdown, title, folderId) {
   const safeName = title.replace(/[/\\:*?"<>|]/g, '-').trim().slice(0, 100);
   const fileName = `${safeName} — ${date}.md`;
 
-  const boundary = 'drive_sidebar_' + Date.now();
+  const boundary = 'notesource_' + Date.now();
   const metadata = JSON.stringify({
     name: fileName,
     mimeType: 'text/markdown',
@@ -82,8 +82,8 @@ function toggleSidebarInTab(tabId) {
   chrome.scripting.executeScript({
     target: { tabId },
     func: () => {
-      const root = document.getElementById('drivesidebar-root');
-      const tab  = document.getElementById('drivesidebar-tab');
+      const root = document.getElementById('notesource-root');
+      const tab  = document.getElementById('notesource-tab');
       if (!root) return;
       const hidden = root.style.display === 'none';
       root.style.display = hidden ? 'block' : 'none';
@@ -138,7 +138,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: (mode) => {
-          const root = document.getElementById('drivesidebar-root');
+          const root = document.getElementById('notesource-root');
           if (root?.__setMode) root.__setMode(mode);
         },
         args: [msg.mode],
