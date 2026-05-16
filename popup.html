@@ -166,6 +166,15 @@
 
       <!-- Cloud Drive column -->
       <div style="flex:1;min-width:0;">
+        <div id="driveConnectSection" style="display:none;margin-bottom:6px;">
+          <button id="driveConnectBtn" style="all:unset;cursor:pointer;display:block;width:100%;text-align:center;font-size:10px;font-weight:600;color:#fff;background:#f8c4d0;padding:6px 4px;border-radius:6px;box-sizing:border-box;">🔗 Connect Google Drive</button>
+          <div id="driveConnectStatus" class="status" style="text-align:center;margin-top:2px;"></div>
+        </div>
+        <div id="driveDisconnectSection" style="display:none;margin-bottom:6px;text-align:center;white-space:nowrap;">
+          <span style="font-size:10px;color:#202124;font-weight:500;">✓ Connected</span>
+          <span style="font-size:10px;color:#dadce0;"> · </span>
+          <button id="driveDisconnectBtn" style="all:unset;cursor:pointer;font-size:10px;color:#5f6368;text-decoration:underline;">Disconnect</button>
+        </div>
         <div class="folder-picker" id="folderPicker"></div>
         <button id="addDriveToggle" style="all:unset;cursor:pointer;display:block;width:100%;text-align:center;font-size:10px;color:#9aa0a6;padding:5px 0;margin-top:2px;border-radius:6px;" onmouseover="this.style.background='#f1f3f4'" onmouseout="this.style.background='transparent'">＋ Add Folder</button>
         <div id="addDriveForm" style="display:none;margin-top:4px;">

@@ -10,10 +10,45 @@
   const localPathInput    = document.getElementById('localPathInput');
   const localAddBtn       = document.getElementById('localAddBtn');
   const localAddStatus    = document.getElementById('localAddStatus');
-  const addDriveToggle    = document.getElementById('addDriveToggle');
-  const addDriveForm      = document.getElementById('addDriveForm');
-  const addLocalToggle    = document.getElementById('addLocalToggle');
-  const addLocalForm      = document.getElementById('addLocalForm');
+  const addDriveToggle      = document.getElementById('addDriveToggle');
+  const addDriveForm        = document.getElementById('addDriveForm');
+  const addLocalToggle      = document.getElementById('addLocalToggle');
+  const addLocalForm        = document.getElementById('addLocalForm');
+  const driveConnectSection    = document.getElementById('driveConnectSection');
+  const driveConnectBtn        = document.getElementById('driveConnectBtn');
+  const driveConnectStatus     = document.getElementById('driveConnectStatus');
+  const driveDisconnectSection = document.getElementById('driveDisconnectSection');
+  const driveDisconnectBtn     = document.getElementById('driveDisconnectBtn');
+
+  // ── Google Drive auth check ───────────────────────────────────────────────
+  function setConnected(connected) {
+    driveConnectSection.style.display    = connected ? 'none'  : 'block';
+    driveDisconnectSection.style.display = connected ? 'block' : 'none';
+    if (!connected) saveBtn.disabled = true;
+    else saveBtn.disabled = folders.length === 0;
+  }
+
+  chrome.identity.getAuthToken({ interactive: false }, (token) => {
+    setConnected(!chrome.runtime.lastError && !!token);
+  });
+
+  driveConnectBtn.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ action: 'connectDrive' });
+    setTimeout(() => window.close(), 300);
+  });
+
+  driveDisconnectBtn.addEventListener('click', () => {
+    chrome.identity.getAuthToken({ interactive: false }, (token) => {
+      if (token) {
+        chrome.identity.removeCachedAuthToken({ token }, () => {
+          fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`).catch(() => {});
+          setConnected(false);
+        });
+      } else {
+        setConnected(false);
+      }
+    });
+  });
 
   // ── Add folder inline toggles ─────────────────────────────────────────────
   addDriveToggle.addEventListener('click', () => {
@@ -319,6 +354,15 @@
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.action === 'saveResult' && isSaving) {
       showResult(msg.ok, msg.error, msg.fileUrl);
+    }
+    if (msg.action === 'driveAuthResult') {
+      if (msg.ok) {
+        setConnected(true);
+      } else {
+        driveConnectBtn.textContent = '🔗 Connect Google Drive';
+        driveConnectStatus.textContent = '✗ ' + (msg.error || 'Cancelled');
+        driveConnectStatus.className = 'status error';
+      }
     }
   });
 

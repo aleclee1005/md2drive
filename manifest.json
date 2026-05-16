@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "NoteSource",
   "version": "1.0.0",
-  "description": "Clip any web page as Markdown — save to Google Drive, local, or clipboard. Built for NotebookLM &amp; Gemini.",
+  "description": "Clip any web page as Markdown — save to Google Drive, local, or clipboard. Built for NotebookLM & Gemini.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -20,7 +20,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [],
   "permissions": [
     "storage",
     "declarativeNetRequest",

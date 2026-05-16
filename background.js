@@ -127,6 +127,16 @@ async function handleSaveCurrentPage(tabId, folderId, customTitle) {
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   (async () => {
+    if (msg.action === 'connectDrive') {
+      getToken(true)
+        .then(() => {
+          chrome.runtime.sendMessage({ action: 'driveAuthResult', ok: true }).catch(() => {});
+        })
+        .catch(e => {
+          chrome.runtime.sendMessage({ action: 'driveAuthResult', ok: false, error: e.message }).catch(() => {});
+        });
+    }
+
     if (msg.action === 'toggle') {
       const tab = await getActiveTab();
       if (tab?.url?.startsWith('http')) toggleSidebarInTab(tab.id);
