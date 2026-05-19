@@ -22,7 +22,6 @@
   },
   "permissions": [
     "storage",
-    "declarativeNetRequest",
     "scripting",
     "tabs",
     "identity",
@@ -32,15 +31,6 @@
   "oauth2": {
     "client_id": "637644398789-ijesnvmaar77mjfb9ravlgqkgotmnkm3.apps.googleusercontent.com",
     "scopes": ["https://www.googleapis.com/auth/drive.file"]
-  },
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "ruleset_1",
-        "enabled": true,
-        "path": "rules.json"
-      }
-    ]
   },
   "web_accessible_resources": [
     {

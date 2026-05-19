@@ -48,7 +48,7 @@ NoteSource uses the Google Drive API with the `drive.file` scope. This scope gra
 - **`tabs`** — used to read the current page URL and title for the Markdown frontmatter
 - **`downloads`** — used to save `.md` files to your local download folder
 - **`storage`** — used to save your folder preferences locally in Chrome
-- **`<all_urls>`** — required to clip content from any web page you choose to save
+- **`activeTab`** — used to access the current tab's content for clipping, only when you click the extension
 
 ---
 
