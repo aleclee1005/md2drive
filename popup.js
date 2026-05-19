@@ -33,8 +33,11 @@
   });
 
   driveConnectBtn.addEventListener('click', () => {
+    driveConnectBtn.textContent = '⏳ Connecting...';
+    driveConnectBtn.style.pointerEvents = 'none';
+    driveConnectStatus.textContent = '';
+    driveConnectStatus.className = 'status';
     chrome.runtime.sendMessage({ action: 'connectDrive' });
-    setTimeout(() => window.close(), 300);
   });
 
   driveDisconnectBtn.addEventListener('click', () => {
@@ -51,6 +54,11 @@
   });
 
   // ── Add folder inline toggles ─────────────────────────────────────────────
+  [addDriveToggle, addLocalToggle].forEach(btn => {
+    btn.addEventListener('mouseover', () => { btn.style.background = '#f1f3f4'; });
+    btn.addEventListener('mouseout',  () => { btn.style.background = 'transparent'; });
+  });
+
   addDriveToggle.addEventListener('click', () => {
     const open = addDriveForm.style.display === 'none';
     addDriveForm.style.display = open ? 'block' : 'none';
@@ -357,9 +365,13 @@
     }
     if (msg.action === 'driveAuthResult') {
       if (msg.ok) {
+        driveConnectStatus.textContent = '✓ Connected!';
+        driveConnectStatus.className = 'status ok';
         setConnected(true);
+        setTimeout(() => window.close(), 1500);
       } else {
         driveConnectBtn.textContent = '🔗 Connect Google Drive';
+        driveConnectBtn.style.pointerEvents = '';
         driveConnectStatus.textContent = '✗ ' + (msg.error || 'Cancelled');
         driveConnectStatus.className = 'status error';
       }
