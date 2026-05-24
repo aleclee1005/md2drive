@@ -265,8 +265,10 @@
           <span class="add-folder-fs-label">💻 ＋ Add Folder</span>
         </button>
         <div id="addLocalForm" style="display:none;margin-top:10px;">
-          <input class="folder-input" id="localPathInput" placeholder="Subfolder name" style="font-size:11px;padding:5px 8px;" />
-          <button class="btn-small" id="localAddBtn" style="margin-top:4px;width:100%;font-size:11px;">Add</button>
+          <div class="hint" style="margin-bottom:6px;">先在 Finder → Downloads 里新建一个文件夹，再把名字填在下面。</div>
+          <input class="folder-input" id="localPathInput" placeholder="e.g. NoteSource" style="font-size:11px;padding:5px 8px;" />
+          <div id="localPathPreview" style="display:none;font-size:10px;color:#5f6368;margin-top:4px;">📁 ~/Downloads/<span id="localPathPreviewName" style="font-weight:600;"></span></div>
+          <button class="btn-small" id="localAddBtn" style="margin-top:6px;width:100%;font-size:11px;">Add</button>
           <div class="status" id="localAddStatus"></div>
         </div>
       </div>

@@ -103,6 +103,18 @@
     if (open) localPathInput.focus();
   });
 
+  const localPathPreview     = document.getElementById('localPathPreview');
+  const localPathPreviewName = document.getElementById('localPathPreviewName');
+  localPathInput.addEventListener('input', () => {
+    const val = localPathInput.value.trim();
+    if (val) {
+      localPathPreviewName.textContent = val;
+      localPathPreview.style.display = 'block';
+    } else {
+      localPathPreview.style.display = 'none';
+    }
+  });
+
   // ── Drive folders ─────────────────────────────────────────────────────────
   let folders = [];
   let selectedIndex = 0;
