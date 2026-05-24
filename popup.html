@@ -113,6 +113,72 @@
     .status { font-size: 11px; color: #5f6368; padding: 2px 0; min-height: 16px; }
     .status.ok { color: #34a853; }
     .status.error { color: #ea4335; }
+
+    /* Drive status dot */
+    .drive-status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #ea4335; flex-shrink: 0; margin-left: 2px;
+      cursor: pointer; transition: background 0.2s, transform 0.15s;
+      pointer-events: all;
+    }
+    .drive-status-dot:hover { transform: scale(1.25); }
+    #saveBtn[aria-disabled="true"] { background: #9aa0a6; cursor: default; }
+    #saveBtn[aria-disabled="true"] .drive-status-dot { cursor: pointer; }
+
+    /* Column header labels */
+    .col-header-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .3px; margin-bottom: 5px;
+    }
+    .col-header-label.drive { color: #e8829a; }
+    .col-header-label.local { color: #4181d5; }
+
+    /* Fieldset-style Add Folder button */
+    .add-folder-fs {
+      position: relative; width: 100%; border-radius: 5px;
+      padding: 8px 0 6px; background: transparent; cursor: pointer;
+      margin-top: 6px; font-family: inherit; transition: background 0.15s;
+      display: block;
+    }
+    .add-folder-fs.drive { border: 1px solid #f8c4d0; }
+    .add-folder-fs.drive:hover { background: #fdf0f4; }
+    .add-folder-fs.local { border: 1px solid #a8c4f0; }
+    .add-folder-fs.local:hover { background: #eef3fd; }
+    .add-folder-fs-label {
+      position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+      background: #fff; padding: 0 5px; font-size: 10px; font-weight: 600;
+      white-space: nowrap; pointer-events: none;
+    }
+    .add-folder-fs.drive .add-folder-fs-label { color: #e8829a; }
+    .add-folder-fs.local .add-folder-fs-label { color: #4181d5; }
+
+    /* Gear button */
+    .gear-btn {
+      background: transparent; border: none; cursor: pointer;
+      font-size: 22px; color: #9aa0a6; padding: 2px 4px;
+      border-radius: 6px; line-height: 1; flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    .gear-btn:hover { background: #f1f3f4; color: #5f6368; }
+
+    /* Settings dropdown */
+    .settings-dropdown {
+      position: absolute; right: 0; top: calc(100% + 4px);
+      background: #fff; border: 1px solid #e8eaed;
+      border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      min-width: 188px; z-index: 200; overflow: hidden;
+    }
+    .settings-menu-item {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; text-align: left; padding: 9px 14px;
+      font-size: 12px; background: transparent; border: none;
+      cursor: pointer; color: #202124; font-family: inherit;
+      transition: background 0.1s;
+    }
+    .settings-menu-item:hover:not(:disabled) { background: #f1f3f4; }
+    .settings-menu-item:disabled { color: #bdc1c6; cursor: default; }
+    .settings-menu-separator {
+      height: 1px; background: #e8eaed; margin: 3px 0;
+    }
   </style>
 </head>
 <body>
@@ -120,7 +186,18 @@
   <div class="section" id="pagePreviewSection">
     <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;">
       <img id="previewFavicon" width="14" height="14" style="border-radius:2px;flex-shrink:0;margin-top:2px;" src="" />
-      <div id="previewTitle" style="font-size:12px;font-weight:600;color:#202124;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;"></div>
+      <div id="previewTitle" style="font-size:12px;font-weight:600;color:#202124;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;flex:1;"></div>
+      <div style="position:relative;flex-shrink:0;">
+        <button id="settingsBtn" class="gear-btn" title="Settings">⚙</button>
+        <div id="settingsDropdown" class="settings-dropdown" style="display:none;">
+          <button id="driveConnectMenuItem" class="settings-menu-item">
+            <span>🔗</span> Connect Google Drive
+          </button>
+          <button id="driveDisconnectMenuItem" class="settings-menu-item" disabled>
+            <span>✕</span> Disconnect Google Drive
+          </button>
+        </div>
+      </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:2px;font-size:11px;color:#5f6368;">
       <div id="previewSource" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
@@ -143,7 +220,7 @@
   <!-- Save buttons row -->
   <div class="section" style="padding-top:10px;padding-bottom:10px;">
     <div style="display:flex;gap:6px;">
-      <button class="btn-primary" id="saveBtn" disabled style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 6px;">
+      <button class="btn-primary" id="saveBtn" aria-disabled="true" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 6px;">
         <svg width="14" height="12" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
           <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
           <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 48.5C.4 49.9 0 51.45 0 53h27.5z" fill="#00ac47"/>
@@ -153,6 +230,7 @@
           <path d="M73.4 26.5l-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.8 53h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
         </svg>
         Drive
+        <span id="driveStatusDot" class="drive-status-dot" title="Not connected — click to connect"></span>
       </button>
       <button class="btn-primary btn-clip" id="copyClipBtn" style="flex:1;padding:8px 6px;">📋 Copy</button>
       <button class="btn-primary btn-local" id="saveLocalBtn" disabled style="flex:1;padding:8px 6px;">💻 Local</button>
@@ -164,20 +242,13 @@
   <div class="section">
     <div style="display:flex;gap:10px;align-items:flex-start;">
 
-      <!-- Cloud Drive column -->
+      <!-- Drive column -->
       <div style="flex:1;min-width:0;">
-        <div id="driveConnectSection" style="display:none;margin-bottom:6px;">
-          <button id="driveConnectBtn" style="all:unset;cursor:pointer;display:block;width:100%;text-align:center;font-size:10px;font-weight:600;color:#fff;background:#f8c4d0;padding:6px 4px;border-radius:6px;box-sizing:border-box;">🔗 Connect Google Drive</button>
-          <div id="driveConnectStatus" class="status" style="text-align:center;margin-top:2px;"></div>
-        </div>
-        <div id="driveDisconnectSection" style="display:none;margin-bottom:6px;text-align:center;white-space:nowrap;">
-          <span style="font-size:10px;color:#202124;font-weight:500;">✓ Connected</span>
-          <span style="font-size:10px;color:#dadce0;"> · </span>
-          <button id="driveDisconnectBtn" style="all:unset;cursor:pointer;font-size:10px;color:#5f6368;text-decoration:underline;">Disconnect</button>
-        </div>
         <div class="folder-picker" id="folderPicker"></div>
-        <button id="addDriveToggle" style="all:unset;cursor:pointer;display:block;width:100%;text-align:center;font-size:10px;color:#9aa0a6;padding:5px 0;margin-top:2px;border-radius:6px;">＋ Add Folder</button>
-        <div id="addDriveForm" style="display:none;margin-top:4px;">
+        <button id="addDriveToggle" class="add-folder-fs drive">
+          <span class="add-folder-fs-label">☁ ＋ Add Folder</span>
+        </button>
+        <div id="addDriveForm" style="display:none;margin-top:10px;">
           <input class="folder-input" id="nameInput" placeholder="Label" style="font-size:11px;padding:5px 8px;margin-bottom:4px;" />
           <input class="folder-input" id="urlInput" placeholder="Folder URL or ID" style="font-size:11px;padding:5px 8px;" />
           <button class="btn-small" id="addBtn" style="margin-top:4px;width:100%;font-size:11px;">Add</button>
@@ -185,13 +256,15 @@
         </div>
       </div>
 
-      <div style="width:1px;background:#e8eaed;align-self:stretch;flex-shrink:0;margin-top:18px;"></div>
+      <div style="width:1px;background:#e8eaed;align-self:stretch;flex-shrink:0;"></div>
 
       <!-- Local column -->
       <div style="flex:1;min-width:0;">
         <div class="folder-picker" id="localFolderPicker"></div>
-        <button id="addLocalToggle" style="all:unset;cursor:pointer;display:block;width:100%;text-align:center;font-size:10px;color:#9aa0a6;padding:5px 0;margin-top:2px;border-radius:6px;">＋ Add Folder</button>
-        <div id="addLocalForm" style="display:none;margin-top:4px;">
+        <button id="addLocalToggle" class="add-folder-fs local">
+          <span class="add-folder-fs-label">💻 ＋ Add Folder</span>
+        </button>
+        <div id="addLocalForm" style="display:none;margin-top:10px;">
           <input class="folder-input" id="localPathInput" placeholder="Subfolder name" style="font-size:11px;padding:5px 8px;" />
           <button class="btn-small" id="localAddBtn" style="margin-top:4px;width:100%;font-size:11px;">Add</button>
           <div class="status" id="localAddStatus"></div>

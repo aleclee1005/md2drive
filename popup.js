@@ -14,33 +14,44 @@
   const addDriveForm        = document.getElementById('addDriveForm');
   const addLocalToggle      = document.getElementById('addLocalToggle');
   const addLocalForm        = document.getElementById('addLocalForm');
-  const driveConnectSection    = document.getElementById('driveConnectSection');
-  const driveConnectBtn        = document.getElementById('driveConnectBtn');
-  const driveConnectStatus     = document.getElementById('driveConnectStatus');
-  const driveDisconnectSection = document.getElementById('driveDisconnectSection');
-  const driveDisconnectBtn     = document.getElementById('driveDisconnectBtn');
+  const driveStatusDot         = document.getElementById('driveStatusDot');
+  const settingsBtn            = document.getElementById('settingsBtn');
+  const settingsDropdown       = document.getElementById('settingsDropdown');
+  const driveConnectMenuItem   = document.getElementById('driveConnectMenuItem');
+  const driveDisconnectMenuItem = document.getElementById('driveDisconnectMenuItem');
+
+  let driveIsConnected = false;
 
   // ── Google Drive auth check ───────────────────────────────────────────────
   function setConnected(connected) {
-    driveConnectSection.style.display    = connected ? 'none'  : 'block';
-    driveDisconnectSection.style.display = connected ? 'block' : 'none';
-    if (!connected) saveBtn.disabled = true;
-    else saveBtn.disabled = folders.length === 0;
+    driveIsConnected = connected;
+    driveStatusDot.style.background = connected ? '#34a853' : '#ea4335';
+    driveStatusDot.title = connected ? 'Connected' : 'Not connected';
+    driveConnectMenuItem.disabled = connected;
+    driveDisconnectMenuItem.disabled = !connected;
+    updateDriveBtn();
   }
 
-  chrome.identity.getAuthToken({ interactive: false }, (token) => {
-    setConnected(!chrome.runtime.lastError && !!token);
+  // ── Gear / settings dropdown ──────────────────────────────────────────────
+  settingsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = settingsDropdown.style.display === 'none';
+    settingsDropdown.style.display = open ? 'block' : 'none';
   });
 
-  driveConnectBtn.addEventListener('click', () => {
-    driveConnectBtn.textContent = '⏳ Connecting...';
-    driveConnectBtn.style.pointerEvents = 'none';
-    driveConnectStatus.textContent = '';
-    driveConnectStatus.className = 'status';
+  document.addEventListener('click', () => {
+    settingsDropdown.style.display = 'none';
+  });
+
+  function connectDrive() {
+    settingsDropdown.style.display = 'none';
+    driveStatusDot.style.background = '#fbbc04';
+    driveStatusDot.title = 'Connecting...';
     chrome.runtime.sendMessage({ action: 'connectDrive' });
-  });
+  }
 
-  driveDisconnectBtn.addEventListener('click', () => {
+  function disconnectDrive() {
+    settingsDropdown.style.display = 'none';
     chrome.identity.getAuthToken({ interactive: false }, (token) => {
       if (token) {
         chrome.identity.removeCachedAuthToken({ token }, () => {
@@ -51,6 +62,25 @@
         setConnected(false);
       }
     });
+  }
+
+  driveConnectMenuItem.addEventListener('click', connectDrive);
+  driveDisconnectMenuItem.addEventListener('click', disconnectDrive);
+
+  function updateDriveBtn() {
+    const canSave = driveIsConnected && folders.length > 0;
+    saveBtn.setAttribute('aria-disabled', canSave ? 'false' : 'true');
+  }
+
+  chrome.identity.getAuthToken({ interactive: false }, (token) => {
+    setConnected(!chrome.runtime.lastError && !!token);
+  });
+
+  // Dot click: shortcut for connect / disconnect
+  driveStatusDot.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (driveIsConnected) disconnectDrive();
+    else connectDrive();
   });
 
   // ── Add folder inline toggles ─────────────────────────────────────────────
@@ -125,7 +155,7 @@
 
   function render() {
     renderPicker();
-    saveBtn.disabled = folders.length === 0;
+    updateDriveBtn();
   }
 
   // ── Local folders ─────────────────────────────────────────────────────────
@@ -336,7 +366,7 @@
 
   function setSaving(label) {
     isSaving = true;
-    saveBtn.disabled = true;
+    saveBtn.setAttribute('aria-disabled', 'true');
     saveLocalBtn.disabled = true;
     saveBtn.textContent = label === 'drive' ? '⏳ Saving...' : 'Drive';
     saveLocalBtn.textContent = label === 'local' ? '⏳ Saving...' : '💻 Local';
@@ -345,7 +375,7 @@
 
   function showResult(ok, message, fileUrl) {
     isSaving = false;
-    saveBtn.disabled = folders.length === 0;
+    updateDriveBtn();
     saveLocalBtn.disabled = localFolders.length === 0;
     saveBtn.textContent = 'Drive';
     saveLocalBtn.textContent = '💻 Local';
@@ -365,15 +395,9 @@
     }
     if (msg.action === 'driveAuthResult') {
       if (msg.ok) {
-        driveConnectStatus.textContent = '✓ Connected!';
-        driveConnectStatus.className = 'status ok';
         setConnected(true);
-        setTimeout(() => window.close(), 1500);
       } else {
-        driveConnectBtn.textContent = '🔗 Connect Google Drive';
-        driveConnectBtn.style.pointerEvents = '';
-        driveConnectStatus.textContent = '✗ ' + (msg.error || 'Cancelled');
-        driveConnectStatus.className = 'status error';
+        setConnected(false);
       }
     }
   });
@@ -415,8 +439,9 @@
   });
 
   // ── Drive ─────────────────────────────────────────────────────────
-  saveBtn.addEventListener('click', () => {
-    if (folders.length === 0 || isSaving) return;
+  saveBtn.addEventListener('click', (e) => {
+    if (e.target === driveStatusDot) return;
+    if (!driveIsConnected || folders.length === 0 || isSaving) return;
     const folderId = folders[selectedIndex]?.id || folders[0].id;
     setSaving('drive');
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
