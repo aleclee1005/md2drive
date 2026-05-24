@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "NoteSource",
   "version": "1.0.3",
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2+iLfBXmCtER4CBCgYQOCS8fLOSoNUtyJNqORV9Z9DMdxTFYD6lu6YfK0oFjuzMYJExzGcvntV7Tw+BFVkCakBr7VQBYJpYwTcFkib84zGTITGcEwo4f5ID5j4bCGphNtSqRh98CbEa0IwzVyb/ZZnPrFABUhE/XeJMcAsa3ENt9ZF9UIk0PkUZtgWzf0APksvds+WucBXJhqmRPFhGY8vMhhl+d0TFEvhOgPrPadWWwtfLI14dM45YQuPuROpaqRAfx8801arxw7mluS1WInwZeQNl+wfTQwfqxsaUpZ6oZCHtaIqQOk0rCW7fzCUG4387d0U8txVvpdzu/Q9UZkwIDAQAB",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtLoezM4tGEJf0utoKhYv1hmaI/Quh1XQr+B2eRy5w0nqj96t6nfS+Q8YmWaEkwVW7JtyVMItHoVa57+HxLp0npFcF7iios6eUxA2SaloWxJDSbcUL65WU/IEutNQ702UZ24EX3r2LJcGhLma7bjJ8CwI4yuRmNBBcj9Nv9syYbch51s/CFse7bKR5IEMBdmuZKN4gRpSCEFIEtGsY83SoPn0h0sUBdnacBWxWjBV7IARTeWMJgn1wzzJbbZy8FDy7bXAO4YNJlwwVqldqlFD22scbDpu1G1jt2PdrgGWxFVBWKaORhH/flfkooI0ms5KU6XV99yUWo4k+jbtxfHQeQIDAQAB",
   "description": "Clip any web page as Markdown — save to Google Drive, local, or clipboard. Built for NotebookLM & Gemini.",
   "icons": {
     "16": "icons/icon16.png",
