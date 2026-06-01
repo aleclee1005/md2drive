@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NoteSource — Web Clipper for NotebookLM & Gemini</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #fff;
+      color: #202124;
+      line-height: 1.6;
+    }
+    header {
+      padding: 60px 24px 40px;
+      text-align: center;
+      border-bottom: 1px solid #e8eaed;
+    }
+    .logo {
+      width: 64px; height: 64px;
+      background: #202124;
+      border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .tagline { font-size: 16px; color: #5f6368; max-width: 480px; margin: 0 auto; }
+    main { max-width: 640px; margin: 0 auto; padding: 48px 24px; }
+    .features { display: flex; flex-direction: column; gap: 24px; margin-bottom: 48px; }
+    .feature { display: flex; gap: 16px; align-items: flex-start; }
+    .feature-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+    .feature h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .feature p { font-size: 14px; color: #5f6368; }
+    .cta { text-align: center; }
+    .cta a {
+      display: inline-block;
+      background: #202124; color: #fff;
+      padding: 12px 28px; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 15px;
+    }
+    .cta a:hover { background: #3c4043; }
+    footer {
+      text-align: center; padding: 24px;
+      font-size: 12px; color: #9aa0a6;
+      border-top: 1px solid #e8eaed;
+    }
+    footer a { color: #9aa0a6; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 53H0c0 1.55.4 3.1 1.2 4.5z" fill="#fff" opacity=".6"/>
+        <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 48.5C.4 49.9 0 51.45 0 53h27.5z" fill="#fff" opacity=".8"/>
+        <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 57.5c.8-1.4 1.2-2.95 1.2-4.5H59.8l5.85 11.25z" fill="#fff" opacity=".6"/>
+        <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#fff"/>
+        <path d="M59.8 53H27.5L13.75 76.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#fff" opacity=".9"/>
+        <path d="M73.4 26.5l-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25 59.8 53h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#fff" opacity=".7"/>
+      </svg>
+    </div>
+    <h1>NoteSource</h1>
+    <p class="tagline">Clip any web page as Markdown — save to Google Drive, local folder, or clipboard. Built for NotebookLM &amp; Gemini.</p>
+  </header>
+
+  <main>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">☁️</div>
+        <div>
+          <h3>Save to Google Drive</h3>
+          <p>Instantly clip the current page as a Markdown file and upload it to any Google Drive folder you choose.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">💻</div>
+        <div>
+          <h3>Save Locally</h3>
+          <p>Download the Markdown file directly to a subfolder in your Downloads — no cloud required.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📋</div>
+        <div>
+          <h3>Copy to Clipboard</h3>
+          <p>One click copies clean Markdown to your clipboard, ready to paste anywhere.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🤖</div>
+        <div>
+          <h3>Built for AI</h3>
+          <p>Output is optimized for NotebookLM, Gemini, and other AI tools that work with Markdown sources.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a href="https://chromewebstore.google.com/detail/notesource/nmoohfklijbkjgegehfbpknimjepejgg" target="_blank">Get NoteSource for Chrome</a>
+    </div>
+  </main>
+
+  <footer>
+    <p>Made by <a href="https://github.com/aleclee1005" target="_blank">aleclee1005</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy Policy</a></p>
+  </footer>
+</body>
+</html>
