@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy — NoteSource</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #fff; color: #202124;
+      line-height: 1.7; max-width: 720px;
+      margin: 0 auto; padding: 48px 24px;
+    }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .meta { font-size: 13px; color: #9aa0a6; margin-bottom: 36px; }
+    h2 { font-size: 17px; font-weight: 600; margin: 32px 0 10px; }
+    p { font-size: 14px; color: #3c4043; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+    th, td { border: 1px solid #e8eaed; padding: 8px 12px; text-align: left; }
+    th { background: #f8f9fa; font-weight: 600; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { font-size: 14px; color: #3c4043; margin-bottom: 6px; }
+    a { color: #1a73e8; }
+    hr { border: none; border-top: 1px solid #e8eaed; margin: 24px 0; }
+    .back { display: inline-block; margin-bottom: 32px; font-size: 13px; color: #5f6368; text-decoration: none; }
+    .back:hover { color: #202124; }
+    code { background: #f1f3f4; padding: 2px 5px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back">← NoteSource</a>
+  <h1>Privacy Policy</h1>
+  <p class="meta">Last updated: 2026-05-16</p>
+
+  <p>NoteSource does not collect, store, or transmit any personal data to any server controlled by the developer. Your data stays between your browser and your own Google Drive.</p>
+
+  <hr>
+
+  <h2>Data Flow</h2>
+  <p>When you use NoteSource to save a page to Google Drive:</p>
+  <ol>
+    <li><strong>Google OAuth</strong> verifies your identity using your Google account. The developer's GCP project acts only as an identity gatekeeper — it does not store your credentials or access tokens.</li>
+    <li><strong>Your files</strong> are uploaded directly from your browser to your own Google Drive account. The file never passes through any developer-controlled server.</li>
+    <li><strong>No data is collected.</strong> The developer does not have access to your files, your Google account information, or your browsing history.</li>
+  </ol>
+
+  <hr>
+
+  <h2>What Data Is Processed</h2>
+  <table>
+    <tr><th>Data</th><th>Where it goes</th><th>Stored by developer?</th></tr>
+    <tr><td>Page content (HTML → Markdown)</td><td>Processed locally in your browser</td><td>No</td></tr>
+    <tr><td>Google OAuth token</td><td>Stored locally in your browser (Chrome storage)</td><td>No</td></tr>
+    <tr><td>Saved <code>.md</code> files</td><td>Your Google Drive or local download folder</td><td>No</td></tr>
+    <tr><td>Page URL, title, metadata</td><td>Included in the <code>.md</code> frontmatter, saved to your Drive</td><td>No</td></tr>
+  </table>
+
+  <hr>
+
+  <h2>Google Drive API</h2>
+  <p>NoteSource uses the Google Drive API with the <code>drive.file</code> scope. This scope grants access <strong>only to files created by NoteSource</strong> — it cannot read or modify any other files in your Google Drive.</p>
+
+  <hr>
+
+  <h2>Permissions</h2>
+  <ul>
+    <li><strong><code>identity</code></strong> — used solely to authenticate with Google OAuth and obtain a Drive access token</li>
+    <li><strong><code>scripting</code></strong> — used to extract page content and convert it to Markdown, entirely within your browser</li>
+    <li><strong><code>tabs</code></strong> — used to read the current page URL and title for the Markdown frontmatter</li>
+    <li><strong><code>downloads</code></strong> — used to save <code>.md</code> files to your local download folder</li>
+    <li><strong><code>storage</code></strong> — used to save your folder preferences locally in Chrome</li>
+    <li><strong><code>activeTab</code></strong> — used to access the current tab's content for clipping, only when you click the extension</li>
+  </ul>
+
+  <hr>
+
+  <h2>Third-Party Services</h2>
+  <p>NoteSource uses the <strong>Google Drive API</strong> and <strong>Google OAuth 2.0</strong>, both operated by Google LLC. Your use of these services is subject to <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</p>
+  <p>No other third-party services are used.</p>
+
+  <hr>
+
+  <h2>Contact</h2>
+  <p>If you have questions about this privacy policy, please open an issue on the <a href="https://github.com/aleclee1005/md2drive" target="_blank">GitHub repository</a>.</p>
+</body>
+</html>
